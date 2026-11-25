@@ -64,10 +64,13 @@ export async function hashFile(file, algorithm, encoding, signal) {
 
 async function requireOperatorOwned(path) {
   if (await realpath(path) !== path) throw new Error("Image runtime must not be redirected");
+  const parents = [];
   for (let current = path;; current = dirname(current)) {
     await requireImmutable(current);
+    parents.push(current);
     if (dirname(current) === current) break;
   }
+  if (process.platform === "darwin") requireNoMacAclGrant(["-lde", ...parents]);
 }
 
 async function requireImmutable(path) {
@@ -89,6 +92,11 @@ async function verifyDistribution(directory) {
     const path = join(directory, entry);
     if ((await requireImmutable(path)).isDirectory()) await verifyDistribution(path);
   }
+
+  function requireNoMacAclGrant(args) {
+    const acl = execFileSync("/bin/ls", args, { encoding: "utf8", env: { LC_ALL: "C" } });
+    if (/^\s+\d+:.*\ballow\b/m.test(acl)) throw new Error("Unexpected ACL grant on Copilot runtime or job storage");
+  }
 }
 
 export function trustedRuntime(cliPath, workRoot) {
@@ -107,6 +115,7 @@ export function trustedRuntime(cliPath, workRoot) {
       await requireOperatorOwned(cliPath);
       await requireOperatorOwned(distribution);
       await verifyDistribution(distribution);
+      if (process.platform === "darwin") requireNoMacAclGrant(["-lRe", distribution]);
     }
     if ((await lstat(cliPath)).isFile() !== true || (await lstat(distribution)).isDirectory() !== true ||
       await hashFile(cliPath, "sha256", "hex", signal) !== target.executableSha256) {
@@ -135,8 +144,5 @@ async function requirePrivateWorkRoot(workRoot, signal) {
   if (!root.isDirectory() || root.uid !== process.getuid() || (root.mode & 0o077)) {
     throw new Error("Expected a private work directory owned by the gateway user");
   }
-  if (process.platform === "darwin") {
-    const acl = execFileSync("/bin/ls", ["-lde", parent, workRoot], { encoding: "utf8", env: { LC_ALL: "C" } });
-    if (/^\s+\d+:/m.test(acl)) throw new Error("Unexpected ACL on Copilot image temporary storage");
-  }
+  if (process.platform === "darwin") requireNoMacAclGrant(["-lde", parent, workRoot]);
 }

@@ -11,20 +11,18 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ubuntu-24.04, ubuntu-24.04-arm]
-        openclaw: ["2026.11.7", "2026.11.8", "2026.11.9", "2026.11.10"]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Test clean Linux install
-        run: docker build --file test/Dockerfile --build-arg OPENCLAW_VERSION="${{ matrix.openclaw }}" .
+        run: docker build --file test/Dockerfile .
 
   macos-preview:
     strategy:
       fail-fast: false
       matrix:
         runner: [macos-15, macos-15-intel]
-        openclaw: ["2026.11.7", "2026.11.8", "2026.11.9", "2026.11.10"]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 25
     steps:
@@ -33,22 +31,18 @@ jobs:
         with:
           node-version: 24.22.1
       - name: Test verified runtime and stock OpenClaw
-        env:
-          STOCK_OPENCLAW: ${{ matrix.openclaw }}
         run: |
           sudo env "PATH=$PATH" node scripts/prepare-runtime.mjs
           npm ci --ignore-scripts
           npm test
           node test/runtime-smoke.mjs
           stock="$(mktemp -d)"
-          npm install --prefix "$stock" --ignore-scripts --no-audit --no-fund "openclaw@$STOCK_OPENCLAW"
-          OPENCLAW_TEST_ROOT="$stock/node_modules/openclaw" npm run test:package
+          for version in 2026.11.7 2026.11.8 2026.11.9 2026.11.10; do
+            npm install --prefix "$stock" --ignore-scripts --no-audit --no-fund "openclaw@$version"
+            OPENCLAW_TEST_ROOT="$stock/node_modules/openclaw" npm run test:package
+          done
 
   windows-preview:
-    strategy:
-      fail-fast: false
-      matrix:
-        openclaw: ["2026.11.7", "2026.11.8", "2026.11.9", "2026.11.10"]
     runs-on: windows-2025
     timeout-minutes: 25
     steps:
@@ -58,8 +52,6 @@ jobs:
           node-version: 24.22.1
       - name: Test verified runtime and stock OpenClaw
         shell: pwsh
-        env:
-          STOCK_OPENCLAW: ${{ matrix.openclaw }}
         run: |
           node scripts/prepare-runtime.mjs
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
@@ -85,8 +77,10 @@ jobs:
             Remove-LocalUser -Name $name
           }
           $stock = Join-Path $env:RUNNER_TEMP 'stock-host'
-          npm install --prefix "$stock" --ignore-scripts --no-audit --no-fund "openclaw@$env:STOCK_OPENCLAW"
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          $env:OPENCLAW_TEST_ROOT = Join-Path $stock 'node_modules\openclaw'
-          npm run test:package
-          exit $LASTEXITCODE
+          foreach ($version in '2026.11.7','2026.11.8','2026.11.9','2026.11.10') {
+            npm install --prefix "$stock" --ignore-scripts --no-audit --no-fund "openclaw@$version"
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+            $env:OPENCLAW_TEST_ROOT = Join-Path $stock 'node_modules\openclaw'
+            npm run test:package
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
