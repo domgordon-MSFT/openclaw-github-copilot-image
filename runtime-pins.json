@@ -17,6 +17,10 @@
     "darwin-x64": {
       "archiveIntegrity": "sha512-yEvWQ5XY10b8KbateMDggbHwj/Ocd5VjkmJX4xDB1YwlMFVin9812X8YsWTaG09RmOKTMU9dwAjWHHSUDUEK6Q==",
       "executableSha256": "25ffb0ee507b6fccf40efaac3b0b5d0ad9039bfb3a5dfd9f43f43af06a54f34b"
+    },
+    "win32-x64": {
+      "archiveIntegrity": "sha512-yAVpmoYDd9wy9C+zTpx+J1378J3a/aTKXm5jRvHhe8OVsYSt3fG7BiRfHT5T4NwLBkJnrlJaLNe0LOsVPdqwRA==",
+      "executableSha256": "3a6bd0d2ec3db07d36009f732aa21afdfa0437003c59484198a794ea5a1a061d"
     }
   }
 }

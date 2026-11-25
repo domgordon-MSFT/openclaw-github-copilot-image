@@ -5,7 +5,7 @@ import { isAbsolute, join } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { crc32 } from "node:zlib";
 import { ImageCompletedError, ImageNotSubmittedError } from "./image-errors.mjs";
-import { protocol, version } from "./trusted-runtime.mjs";
+import { isolatedRuntimeEnv, protocol, version } from "./trusted-runtime.mjs";
 
 const imageTool = "image_generation";
 export const maxInputImages = 16;
@@ -135,8 +135,7 @@ export function createCopilotImageAdapter({ cliPath, expectedLogin, workRoot, pr
         observability: { logLevel: "none" },
         runtime: RuntimeConnection.forSpawnedStdio({
           path: cliPath, workingDirectory, baseDirectory: join(directory, "state"),
-          env: identity ? { HOME: directory, TMPDIR: directory, PATH: "/usr/bin:/bin", COPILOT_AUTO_UPDATE: "false",
-            COPILOT_CACHE_HOME: identity.cacheDirectory, COPILOT_CLI_DIST_DIR: identity.distribution } : childEnvironment(),
+          env: identity ? isolatedRuntimeEnv(directory, identity) : childEnvironment(),
         }),
       });
       attempt.phase = "starting the Copilot runtime";

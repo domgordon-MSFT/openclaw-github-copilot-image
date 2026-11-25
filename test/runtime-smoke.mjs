@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { CopilotClient, RuntimeConnection } from "@microsoft/copilot-sdk";
-import { defaultCli, jobParent, protocol, trustedRuntime, version } from "../trusted-runtime.mjs";
+import { defaultCli, isolatedRuntimeEnv, jobParent, protocol, trustedRuntime, version } from "../trusted-runtime.mjs";
 
 const workRoot = await mkdtemp(join(jobParent, "copilot-image-smoke-"));
 try {
@@ -13,8 +13,7 @@ try {
     mode: "empty", github: { useLoggedInUser: false }, observability: { logLevel: "none" },
     runtime: RuntimeConnection.forSpawnedStdio({
       path: defaultCli, workingDirectory: work, baseDirectory: join(workRoot, "state"),
-      env: { HOME: workRoot, TMPDIR: workRoot, PATH: "/usr/bin:/bin", COPILOT_AUTO_UPDATE: "false",
-        COPILOT_CACHE_HOME: cacheDirectory, COPILOT_CLI_DIST_DIR: distribution },
+      env: isolatedRuntimeEnv(workRoot, { cacheDirectory, distribution }),
     }),
   });
   try {

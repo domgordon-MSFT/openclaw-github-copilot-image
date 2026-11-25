@@ -11,14 +11,14 @@
   "engines": { "node": ">=24.16.0 <25 || >=26.1.0" },
   "openclaw": {
     "extensions": ["./index.mjs"],
-    "compat": { "pluginApi": "2026.11.7 || 2026.11.10" },
-    "hostTargets": ["linux-x64", "linux-arm64", "darwin-arm64", "darwin-x64"],
+    "compat": { "pluginApi": ">=2026.11.7 <=2026.11.10" },
+    "hostTargets": ["linux-x64", "linux-arm64", "darwin-arm64", "darwin-x64", "win32-x64"],
     "build": { "openclawVersion": "2026.11.7" }
   },
   "files": [
     "openclaw.plugin.json", "index.mjs", "copilot-adapter.mjs", "openclaw-profile.mjs",
     "image-errors.mjs", "profile-preflight.mjs", "trusted-runtime.mjs", "runtime-pins.json",
-    "scripts/prepare-runtime.mjs", "npm-shrinkwrap.json"
+    "scripts/prepare-runtime.mjs", "scripts/windows-acl.ps1", "npm-shrinkwrap.json"
   ],
   "scripts": {
     "test": "node --test test/copilot-adapter.test.mjs",
@@ -26,6 +26,6 @@
   },
   "dependencies": { "@microsoft/copilot-sdk": "2.0.1" },
   "devDependencies": { "vscode-jsonrpc": "10.0.0" },
-  "peerDependencies": { "openclaw": "2026.11.7 || 2026.11.10" },
+  "peerDependencies": { "openclaw": ">=2026.11.7 <=2026.11.10" },
   "peerDependenciesMeta": { "openclaw": { "optional": true } }
 }

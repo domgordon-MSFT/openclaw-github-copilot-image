@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ubuntu-24.04, ubuntu-24.04-arm]
-        openclaw: ["2026.11.7", "2026.11.10"]
+        openclaw: ["2026.11.7", "2026.11.8", "2026.11.9", "2026.11.10"]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 25
     steps:
@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [macos-15, macos-15-intel]
-        openclaw: ["2026.11.7", "2026.11.10"]
+        openclaw: ["2026.11.7", "2026.11.8", "2026.11.9", "2026.11.10"]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 25
     steps:
@@ -43,3 +43,49 @@ jobs:
           stock="$(mktemp -d)"
           npm install --prefix "$stock" --ignore-scripts --no-audit --no-fund "openclaw@$STOCK_OPENCLAW"
           OPENCLAW_TEST_ROOT="$stock/node_modules/openclaw" npm run test:package
+
+  windows-preview:
+    strategy:
+      fail-fast: false
+      matrix:
+        openclaw: ["2026.11.7", "2026.11.8", "2026.11.9", "2026.11.10"]
+    runs-on: windows-2025
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.22.1
+      - name: Test verified runtime and stock OpenClaw
+        shell: pwsh
+        env:
+          STOCK_OPENCLAW: ${{ matrix.openclaw }}
+        run: |
+          node scripts/prepare-runtime.mjs
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          npm ci --ignore-scripts
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          npm test
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $bytes = [Security.Cryptography.RandomNumberGenerator]::GetBytes(24)
+          $password = ConvertTo-SecureString ("aA0!" + [Convert]::ToBase64String($bytes)) -AsPlainText -Force
+          $name = 'CopilotImageSmoke'
+          $null = New-LocalUser -Name $name -Password $password -AccountNeverExpires
+          try {
+            Add-LocalGroupMember -SID 'S-1-5-32-545' -Member $name
+            $credential = [PSCredential]::new("$env:COMPUTERNAME\$name", $password)
+            $node = (Get-Command node.exe).Source
+            $script = Join-Path $env:GITHUB_WORKSPACE 'test\runtime-smoke.mjs'
+            $log = Join-Path $env:RUNNER_TEMP 'copilot-runtime-smoke.log'
+            $errors = Join-Path $env:RUNNER_TEMP 'copilot-runtime-smoke.err'
+            $process = Start-Process -FilePath $node -ArgumentList "`"$script`"" -Credential $credential -LoadUserProfile -WorkingDirectory $env:GITHUB_WORKSPACE -Wait -PassThru -RedirectStandardOutput $log -RedirectStandardError $errors
+            if ($process.ExitCode) { Get-Content -LiteralPath $errors; exit $process.ExitCode }
+          } finally {
+            Remove-LocalUser -Name $name
+          }
+          $stock = Join-Path $env:RUNNER_TEMP 'stock-host'
+          npm install --prefix "$stock" --ignore-scripts --no-audit --no-fund "openclaw@$env:STOCK_OPENCLAW"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $env:OPENCLAW_TEST_ROOT = Join-Path $stock 'node_modules\openclaw'
+          npm run test:package
+          exit $LASTEXITCODE

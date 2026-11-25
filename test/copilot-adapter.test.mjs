@@ -126,7 +126,7 @@ test("a trusted host identity is used at client and session scope without ambien
 
 test("host profile selection refuses a simulator before it can resolve credentials", () => {
   assert.throws(() => hostProfileAuth({}, { authProfileId: "github-copilot:github",
-    cliPath: process.execPath, workRoot: "/dev/shm/fixture" }), /supported macOS or glibc Linux|absolute Copilot path/);
+    cliPath: process.execPath, workRoot: "/dev/shm/fixture" }), /supported Windows, macOS or glibc Linux|absolute Copilot path/);
 });
 
 test("identity or capability failures never execute an image request", async t => {
