@@ -15,13 +15,13 @@ if ($Mode -in 'install','owner') {
     throw 'Run the gateway without elevation'
 }
 
-function Assert-Protected($Item, $Allowed, [long]$Mask) {
+function Assert-Protected($Item, $Allowed, [long]$Mask, [bool]$CheckInheritance = $false) {
     if (($Item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Unexpected reparse point' }
     $acl = Get-Acl -LiteralPath $Item.FullName
     $sid = [Security.Principal.SecurityIdentifier]
     if ($acl.GetOwner($sid).Value -notin $Allowed) { throw 'Unexpected owner' }
     foreach ($rule in $acl.GetAccessRules($true,$true,$sid)) {
-        if (($rule.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -ne 0) { continue }
+        if (!$CheckInheritance -and ($rule.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -ne 0) { continue }
         if ($rule.AccessControlType -eq 'Allow' -and $rule.IdentityReference.Value -notin $Allowed -and
             ([long]$rule.FileSystemRights -band $Mask) -ne 0) { throw 'Unexpected access rule' }
     }
@@ -44,7 +44,7 @@ $ancestorMutation = 0x500D0150
 if ($Mode -eq 'private') {
     $operators += $identity.User.Value
     # Check against all data and mutation rights, not just the write bits.
-    Assert-Protected $item $operators 0xF00D01FF
+    Assert-Protected $item $operators 0xF00D01FF $true
 } else {
     Assert-Protected $item $operators $mutation
 }
