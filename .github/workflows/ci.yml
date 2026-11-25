@@ -75,10 +75,11 @@ jobs:
             Add-LocalGroupMember -SID 'S-1-5-32-545' -Member $name
             $credential = [PSCredential]::new("$env:COMPUTERNAME\$name", $password)
             $node = (Get-Command node.exe).Source
-            $script = Join-Path $env:GITHUB_WORKSPACE 'test\runtime-smoke.mjs'
+            $script = Join-Path $env:GITHUB_WORKSPACE 'test\windows-smoke.ps1'
+            $powershell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
             $log = Join-Path $env:RUNNER_TEMP 'copilot-runtime-smoke.log'
             $errors = Join-Path $env:RUNNER_TEMP 'copilot-runtime-smoke.err'
-            $process = Start-Process -FilePath $node -ArgumentList "`"$script`"" -Credential $credential -LoadUserProfile -WorkingDirectory $env:GITHUB_WORKSPACE -Wait -PassThru -RedirectStandardOutput $log -RedirectStandardError $errors
+            $process = Start-Process -FilePath $powershell -ArgumentList "-NoProfile -NonInteractive -File `"$script`" `"$node`"" -Credential $credential -LoadUserProfile -WorkingDirectory $env:GITHUB_WORKSPACE -Wait -PassThru -RedirectStandardOutput $log -RedirectStandardError $errors
             if ($process.ExitCode) { Get-Content -LiteralPath $errors; exit $process.ExitCode }
           } finally {
             Remove-LocalUser -Name $name
