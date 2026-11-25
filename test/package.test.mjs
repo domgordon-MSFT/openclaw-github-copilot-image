@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 
 test("the installed Copilot provider runs through stock image_generate", t => {
   const root = process.env.OPENCLAW_TEST_ROOT;
-  assert.ok(root && isAbsolute(root), "Set OPENCLAW_TEST_ROOT to the stock 2026.11.7 npm package");
+  assert.ok(root && isAbsolute(root), "Set OPENCLAW_TEST_ROOT to a supported stock OpenClaw npm package");
   const dir = mkdtempSync(join(tmpdir(), "oc-stock-image-turn-"));
   t.after(() => rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));
   writeFileSync(join(dir, ".owner"), String(process.pid), { flag: "wx" });

@@ -8,7 +8,7 @@ const dir = process.cwd();
 assert.equal(dir, process.env.OPENCLAW_STATE_DIR);
 assert.equal(await readFile(join(dir, ".owner"), "utf8"), String(process.ppid));
 const root = process.env.OPENCLAW_TEST_ROOT;
-assert.equal(JSON.parse(await readFile(join(root, "package.json"))).version, "2026.11.7");
+assert.ok(["2026.11.7", "2026.11.10"].includes(JSON.parse(await readFile(join(root, "package.json"))).version));
 const dist = join(root, "dist");
 const host = name => import(pathToFileURL(join(dist, name)).href);
 const id = "github-copilot-image";

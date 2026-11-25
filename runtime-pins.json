@@ -1,0 +1,22 @@
+{
+  "version": "1.0.114",
+  "protocol": 4,
+  "targets": {
+    "linux-x64": {
+      "archiveIntegrity": "sha512-gHnINm9ffFqz+G19cQUqRe3lsTAQO3Tbdj7r7Bx1ktZvC5X6iXd/nfo1DRTj9magb52aGRiuwB3yvD1lkW68xQ==",
+      "executableSha256": "990cc6cf4e171ef88b6e3c873f7b62c0dc044b223a7ace518ac284baf2578fc6"
+    },
+    "linux-arm64": {
+      "archiveIntegrity": "sha512-4wq2alA+PX/hAcZMQepuLklrn2wmOIvNgPvX2x0QtOWonXrfixxK/x5AiNihyBEEq+YqUjo29g0fHwTdNptHwQ==",
+      "executableSha256": "1e757e8cbd90ecd9966231c67642dcff466c42fc13c9c6d68834596a3992e1e4"
+    },
+    "darwin-arm64": {
+      "archiveIntegrity": "sha512-Mw47DTwMNDG0bb4t1rVu7S+ekdThIGGitpG28/wGpACZ0lFhYnpNEoSJ7hHBM3oix4b/w6+ZcmxE9J9MngsR9Q==",
+      "executableSha256": "be83aa2f10d85e76063c33995382a33c5fa6893d48343a8a6c897a9e825f15c6"
+    },
+    "darwin-x64": {
+      "archiveIntegrity": "sha512-yEvWQ5XY10b8KbateMDggbHwj/Ocd5VjkmJX4xDB1YwlMFVin9812X8YsWTaG09RmOKTMU9dwAjWHHSUDUEK6Q==",
+      "executableSha256": "25ffb0ee507b6fccf40efaac3b0b5d0ad9039bfb3a5dfd9f43f43af06a54f34b"
+    }
+  }
+}

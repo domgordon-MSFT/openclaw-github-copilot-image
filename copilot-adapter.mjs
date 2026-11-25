@@ -5,11 +5,10 @@ import { isAbsolute, join } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { crc32 } from "node:zlib";
 import { ImageCompletedError, ImageNotSubmittedError } from "./image-errors.mjs";
+import { protocol, version } from "./trusted-runtime.mjs";
 
 const imageTool = "image_generation";
 export const maxInputImages = 16;
-const version = "1.0.114";
-const protocol = 4;
 const maxPngBytes = 64 * 1024 * 1024;
 const extensions = new Map([["image/png", "png"], ["image/jpeg", "jpg"], ["image/webp", "webp"]]);
 
@@ -107,7 +106,11 @@ export function createCopilotImageAdapter({ cliPath, expectedLogin, workRoot, pr
 
   async function withSession(job, signal, attempt) {
     signal.throwIfAborted();
-    if (profileAuth) await mkdir(workRoot, { mode: 0o700, recursive: true });
+    attempt.phase = "resolving the configured OpenClaw Copilot profile";
+    const identity = profileAuth ? await profileAuth(signal) : undefined;
+    if (profileAuth && !identity?.token) throw new Error("Missing explicit Copilot identity");
+    signal.throwIfAborted();
+    attempt.phase = "creating the private Copilot work directory";
     const root = await lstat(workRoot);
     if (!root.isDirectory() || (process.platform !== "win32" && (root.uid !== process.getuid() || (root.mode & 0o077)))) {
       throw new Error("Expected a private work directory owned by the runtime user");
@@ -127,10 +130,6 @@ export function createCopilotImageAdapter({ cliPath, expectedLogin, workRoot, pr
     const permissions = attempt.permissions;
     try {
       await mkdir(workingDirectory, { mode: 0o700 });
-      attempt.phase = "resolving the configured OpenClaw Copilot profile";
-      const identity = profileAuth ? await profileAuth(signal) : undefined;
-      if (profileAuth && !identity?.token) throw new Error("Missing explicit Copilot identity");
-      signal.throwIfAborted();
       client = makeClient({
         mode: "empty", github: identity ? { token: identity.token, useLoggedInUser: false } : { useLoggedInUser: true },
         observability: { logLevel: "none" },

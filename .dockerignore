@@ -10,12 +10,15 @@
 !openclaw-profile.mjs
 !preflight.mjs
 !profile-preflight.mjs
+!runtime-pins.json
+!trusted-runtime.mjs
 !scripts/
-!scripts/prepare-linux-runtime.sh
+!scripts/prepare-runtime.mjs
 !test/
 !test/Dockerfile
 !test/copilot-adapter.test.mjs
 !test/package.test.mjs
+!test/runtime-smoke.mjs
 !test/fixtures/
 !test/fixtures/image-service.mjs
 !test/fixtures/native-dispatch.mjs

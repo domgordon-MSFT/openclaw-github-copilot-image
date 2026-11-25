@@ -1,6 +1,6 @@
 {
   "name": "openclaw-github-copilot-image",
-  "version": "0.3.1-preview.2",
+  "version": "0.3.1-preview.3",
   "description": "GitHub Copilot backend for OpenClaw's built-in image generation tool",
   "license": "MIT",
   "repository": {
@@ -11,13 +11,14 @@
   "engines": { "node": ">=24.16.0 <25 || >=26.1.0" },
   "openclaw": {
     "extensions": ["./index.mjs"],
-    "compat": { "pluginApi": ">=2026.11.7" },
+    "compat": { "pluginApi": "2026.11.7 || 2026.11.10" },
+    "hostTargets": ["linux-x64", "linux-arm64", "darwin-arm64", "darwin-x64"],
     "build": { "openclawVersion": "2026.11.7" }
   },
   "files": [
     "openclaw.plugin.json", "index.mjs", "copilot-adapter.mjs", "openclaw-profile.mjs",
-    "image-errors.mjs", "profile-preflight.mjs",
-    "scripts/prepare-linux-runtime.sh", "npm-shrinkwrap.json"
+    "image-errors.mjs", "profile-preflight.mjs", "trusted-runtime.mjs", "runtime-pins.json",
+    "scripts/prepare-runtime.mjs", "npm-shrinkwrap.json"
   ],
   "scripts": {
     "test": "node --test test/copilot-adapter.test.mjs",
@@ -25,6 +26,6 @@
   },
   "dependencies": { "@microsoft/copilot-sdk": "2.0.1" },
   "devDependencies": { "vscode-jsonrpc": "10.0.0" },
-  "peerDependencies": { "openclaw": "2026.11.7" },
+  "peerDependencies": { "openclaw": "2026.11.7 || 2026.11.10" },
   "peerDependenciesMeta": { "openclaw": { "optional": true } }
 }
