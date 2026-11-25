@@ -92,11 +92,11 @@ async function verifyDistribution(directory) {
     const path = join(directory, entry);
     if ((await requireImmutable(path)).isDirectory()) await verifyDistribution(path);
   }
+}
 
-  function requireNoMacAclGrant(args) {
-    const acl = execFileSync("/bin/ls", args, { encoding: "utf8", env: { LC_ALL: "C" } });
-    if (/^\s+\d+:.*\ballow\b/m.test(acl)) throw new Error("Unexpected ACL grant on Copilot runtime or job storage");
-  }
+function requireNoMacAclGrant(args) {
+  const acl = execFileSync("/bin/ls", args, { encoding: "utf8", env: { LC_ALL: "C" }, timeout: 10_000 });
+  if (/^\s+\d+:.*\ballow\b/m.test(acl)) throw new Error("Unexpected ACL grant on Copilot runtime or job storage");
 }
 
 export function trustedRuntime(cliPath, workRoot) {
