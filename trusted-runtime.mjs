@@ -35,8 +35,11 @@ async function windowsAcl(mode, path, signal) {
   try {
     await promisify(execFile)(powershell(), ["-NoProfile", "-NonInteractive", "-File", aclScript, mode, path],
       { env: windowsSystemEnv(), windowsHide: true, signal });
-  } catch {
-    throw new Error("Windows rejected the Copilot runtime or job directory permissions");
+  } catch (error) {
+    signal?.throwIfAborted();
+    const detail = /Unexpected (?:reparse point|owner|access rule)|Use a fixed local Windows volume|Run the gateway without elevation/
+      .exec(error.stderr ?? "")?.[0];
+    throw new Error(`Windows ACL verification failed (${mode})${detail ? `: ${detail}` : ""}`);
   }
 }
 

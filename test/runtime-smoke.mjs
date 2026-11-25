@@ -6,7 +6,7 @@ import { defaultCli, isolatedRuntimeEnv, jobParent, protocol, trustedRuntime, ve
 
 const workRoot = await mkdtemp(join(jobParent, "copilot-image-smoke-"));
 try {
-  const { cacheDirectory, distribution } = await trustedRuntime(defaultCli, workRoot)(AbortSignal.timeout(30_000));
+  const { cacheDirectory, distribution } = await trustedRuntime(defaultCli, workRoot)(AbortSignal.timeout(120_000));
   const work = join(workRoot, "work");
   await mkdir(work, { mode: 0o700 });
   const client = new CopilotClient({

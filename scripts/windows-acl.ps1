@@ -17,7 +17,8 @@ if ($Mode -in 'install','owner') {
 
 function Assert-Protected($Item, $Allowed, [long]$Mask, [bool]$CheckInheritance = $false) {
     if (($Item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Unexpected reparse point' }
-    $acl = Get-Acl -LiteralPath $Item.FullName
+    $sections = [Security.AccessControl.AccessControlSections]::Owner -bor [Security.AccessControl.AccessControlSections]::Access
+    $acl = $Item.GetAccessControl($sections)
     $sid = [Security.Principal.SecurityIdentifier]
     if ($acl.GetOwner($sid).Value -notin $Allowed) { throw 'Unexpected owner' }
     foreach ($rule in $acl.GetAccessRules($true,$true,$sid)) {
