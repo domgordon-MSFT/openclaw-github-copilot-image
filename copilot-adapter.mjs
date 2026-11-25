@@ -7,6 +7,7 @@ import { crc32 } from "node:zlib";
 import { ImageCompletedError, ImageNotSubmittedError } from "./image-errors.mjs";
 
 const imageTool = "image_generation";
+export const maxInputImages = 16;
 const version = "1.0.114";
 const protocol = 4;
 const maxPngBytes = 64 * 1024 * 1024;
@@ -68,7 +69,7 @@ function imageSchema(metadata) {
   const props = tools[0].input_schema?.properties;
   const refs = props?.input_images;
   if (props?.prompt?.type !== "string" || !Number.isSafeInteger(props.prompt.maxLength) ||
-    refs?.type !== "array" || !Number.isSafeInteger(refs.maxItems) || refs.maxItems < 1 ||
+    refs?.type !== "array" || !Number.isSafeInteger(refs.maxItems) || refs.maxItems < maxInputImages ||
     !refs.items?.oneOf?.some(v => v.properties?.path?.type === "string" && v.required?.includes("path")) ||
     !Array.isArray(props.size?.enum) || !Array.isArray(props.quality?.enum)) {
     throw new Error("Unsupported Copilot image tool schema");
@@ -78,7 +79,7 @@ function imageSchema(metadata) {
 
 async function stageArguments(job, props, workingDirectory) {
   if (typeof job.prompt !== "string" || !job.prompt.trim() || job.prompt.length > props.prompt.maxLength ||
-    !Array.isArray(job.references) || job.references.length > props.input_images.maxItems ||
+    !Array.isArray(job.references) || job.references.length > maxInputImages ||
     (job.size !== undefined && !props.size.enum.includes(job.size)) ||
     (job.quality !== undefined && !props.quality.enum.includes(job.quality))) {
     throw new Error("Approved image operation exceeds the Copilot tool schema");

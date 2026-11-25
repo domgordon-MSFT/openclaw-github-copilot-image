@@ -99,6 +99,14 @@ test("preflight uses the real contract but never executes an image tool or inher
   assert.deepEqual(await readdir(workRoot), []);
 });
 
+test("preflight rejects a runtime that cannot serve the advertised reference limit", async t => {
+  const { sdk, adapter } = await fixture(t);
+  sdk.tools = structuredClone([descriptor]);
+  sdk.tools[0].input_schema.properties.input_images.maxItems = 2;
+  await assert.rejects(adapter.preflight(), /tool session.*nothing submitted/);
+  assert.equal(sdk.calls.length, 0);
+});
+
 test("a trusted host identity is used at client and session scope without ambient login fallback", async t => {
   let resolutions = 0;
   const { adapter, sdk } = await fixture(t, { profileAuth: async signal => {

@@ -50,12 +50,15 @@ const { createOpenClawToolsAsync } = modules.find(bundle => typeof bundle.create
 const tools = await createOpenClawToolsAsync({ config, workspaceDir: workspace });
 const tool = tools.find(value => value.name === "image_generate");
 assert.ok(tool, "Stock image_generate should be available");
-const refA = join(workspace, "red.png"), refB = join(workspace, "blue.png");
 const secondPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgYPjfAAACgwGAQ7v4AwAAAABJRU5ErkJggg==";
-await writeFile(refA, Buffer.from(fixturePng, "base64"));
-await writeFile(refB, Buffer.from(secondPng, "base64"));
+const references = Array.from({ length: 16 }, (_, i) => i === 15 ? secondPng : fixturePng);
+const paths = await Promise.all(references.map(async (base64, i) => {
+  const path = join(workspace, `reference-${i}.png`);
+  await writeFile(path, Buffer.from(base64, "base64"));
+  return path;
+}));
 const create = await tool.execute("stock-create", { prompt: "Make a blue circle." });
-const edit = await tool.execute("stock-edit", { prompt: "Combine these two drawings.", images: [refA, refB] });
+const edit = await tool.execute("stock-edit", { prompt: "Combine these drawings.", images: paths });
 for (const result of [create, edit]) {
   assert.equal(result.details.provider, "github-copilot", JSON.stringify(result.details));
   assert.equal(result.details.model, "image-generation");
@@ -64,5 +67,5 @@ for (const result of [create, edit]) {
 }
 const receipts = (await readFile(join(dir, "receipts.jsonl"), "utf8")).trim().split("\n").map(line => JSON.parse(line));
 assert.deepEqual(receipts.map(({ prompt, references }) => [prompt, references]), [
-  ["Make a blue circle.", []], ["Combine these two drawings.", [fixturePng, secondPng]],
+  ["Make a blue circle.", []], ["Combine these drawings.", references],
 ]);

@@ -17,7 +17,7 @@ async function requireOperatorOwned(path) {
 
 export function hostProfileAuth({ cfg, agentDir, workspaceDir, authStore }, { authProfileId, cliPath, workRoot }) {
   if (process.platform !== "linux" || process.arch !== "x64" || cliPath !== officialCli || dirname(workRoot) !== "/dev/shm" ||
-    !/^github-copilot:[\w.-]+$/.test(authProfileId)) {
+    typeof authProfileId !== "string" || !/^github-copilot:[^\s\x00-\x1f\x7f]+(?![\s\S])/u.test(authProfileId)) {
     throw new Error("Existing profile auth requires an explicit GitHub Copilot profile and the pinned official Linux runtime");
   }
   return async signal => {

@@ -1,10 +1,9 @@
-import { CopilotExecutionError, createCopilotImageAdapter } from "./copilot-adapter.mjs";
+import { CopilotExecutionError, createCopilotImageAdapter, maxInputImages } from "./copilot-adapter.mjs";
 import { hostProfileAuth } from "./openclaw-profile.mjs";
 
 const id = "github-copilot-image";
 const model = "image-generation";
 const mode = { maxCount: 1, supportsSize: true };
-const maxInputImages = 16;
 
 export default {
   id,
@@ -29,7 +28,7 @@ export default {
       async generateImage(req) {
         const references = req.inputImages ?? [];
         if ((req.count ?? 1) !== 1 || references.length > maxInputImages || (req.model && req.model !== model)) {
-          throw new Error("GitHub Copilot supports one output per call and up to 16 reference images");
+          throw new Error(`GitHub Copilot supports one output per call and up to ${maxInputImages} reference images`);
         }
         const signal = req.signal
           ? AbortSignal.any([req.signal, AbortSignal.timeout(req.timeoutMs ?? 180_000)])

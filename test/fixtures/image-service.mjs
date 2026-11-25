@@ -12,7 +12,7 @@ export function serveImageFixture(onExecute) {
   rpc.onRequest("session.options.update", () => ({}));
   rpc.onRequest("session.tools.initializeAndValidate", () => ({}));
   rpc.onRequest("session.tools.getCurrentMetadata", () => ({ tools: [{ name: "image_generation", input_schema: {
-    properties: { prompt: { type: "string", maxLength: 32000 }, input_images: { type: "array", maxItems: 2,
+    properties: { prompt: { type: "string", maxLength: 32000 }, input_images: { type: "array", maxItems: 16,
       items: { oneOf: [{ properties: { path: { type: "string" } }, required: ["path"] }] } },
     size: { enum: ["auto"] }, quality: { enum: ["auto"] } },
   } }] }));
