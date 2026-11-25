@@ -1,0 +1,21 @@
+{
+  "id": "github-copilot-image",
+  "name": "GitHub Copilot Image Generation",
+  "description": "Use GitHub Copilot with OpenClaw's built-in image generation tool.",
+  "enabledByDefault": false,
+  "contracts": { "imageGenerationProviders": ["github-copilot"] },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "anyOf": [
+      { "maxProperties": 0 },
+      { "required": ["cliPath", "workRoot", "expectedLogin"] }
+    ],
+    "properties": {
+      "cliPath": { "type": "string", "minLength": 1 },
+      "workRoot": { "type": "string", "minLength": 1 },
+      "expectedLogin": { "type": "string", "pattern": "\\S" },
+      "authProfileId": { "type": "string", "pattern": "^github-copilot:[a-zA-Z0-9_.-]+$" }
+    }
+  }
+}
