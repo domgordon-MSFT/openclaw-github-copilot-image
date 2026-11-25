@@ -22,7 +22,7 @@ export function windowsSystemEnv() {
   if (!windows) return {};
   const root = process.env.SystemRoot;
   if (typeof root !== "string" || !isAbsolute(root)) throw new Error("Missing Windows SystemRoot");
-  return { SystemRoot: root, WINDIR: root, PATH: windowsSystem() };
+  return { SystemRoot: root, WINDIR: root, PATH: windowsSystem(), PATHEXT: ".COM;.EXE" };
 }
 
 export function windowsAclSync(mode, path) {

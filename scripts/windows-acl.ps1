@@ -28,6 +28,8 @@ function Assert-Protected($Item, $Allowed, [long]$Mask) {
 }
 
 $item = Get-Item -LiteralPath $Path -Force
+$drive = [IO.DriveInfo]::new([IO.Path]::GetPathRoot($item.FullName))
+if ($drive.DriveType -ne [IO.DriveType]::Fixed) { throw 'Use a fixed local Windows volume' }
 if ($Mode -eq 'owner') {
     $icacls = Join-Path ([Environment]::SystemDirectory) 'icacls.exe'
     & $icacls $item.FullName /setowner ('*' + $admin) /T /Q | Out-Null
@@ -38,7 +40,7 @@ if ($Mode -eq 'owner') {
 # Generic write/all, data/metadata writes, deletion, ACL/owner changes.
 $mutation = 0x500D0156
 # Ancestors can permit unrelated creates, but not replacement of an existing child.
-$ancestorMutation = 0x500D0040
+$ancestorMutation = 0x500D0150
 if ($Mode -eq 'private') {
     $operators += $identity.User.Value
     # Check against all data and mutation rights, not just the write bits.
