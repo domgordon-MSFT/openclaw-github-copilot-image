@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, isAbsolute } from "node:path";
 import test from "node:test";
@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 test("the installed Copilot provider runs through stock image_generate", t => {
   const root = process.env.OPENCLAW_TEST_ROOT;
   assert.ok(root && isAbsolute(root), "Set OPENCLAW_TEST_ROOT to a supported stock OpenClaw npm package");
-  const dir = mkdtempSync(join(tmpdir(), "oc-stock-image-turn-"));
+  const dir = mkdtempSync(join(realpathSync(tmpdir()), "oc-stock-image-turn-"));
   t.after(() => rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));
   writeFileSync(join(dir, ".owner"), String(process.pid), { flag: "wx" });
   const env = Object.fromEntries(["PATH", "SystemRoot", "COMSPEC", "PATHEXT", "TMP", "TEMP", "TMPDIR"]
