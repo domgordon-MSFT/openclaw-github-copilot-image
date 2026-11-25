@@ -62,18 +62,30 @@ jobs:
           $bytes = [Security.Cryptography.RandomNumberGenerator]::GetBytes(24)
           $password = ConvertTo-SecureString ("aA0!" + [Convert]::ToBase64String($bytes)) -AsPlainText -Force
           $name = 'CopilotImageSmoke'
-          $null = New-LocalUser -Name $name -Password $password -AccountNeverExpires
+          $account = New-LocalUser -Name $name -Password $password -AccountNeverExpires
+          $jobParent = Join-Path "$env:SystemDrive\" ("copilot-smoke-" + [guid]::NewGuid())
           try {
             Add-LocalGroupMember -SID 'S-1-5-32-545' -Member $name
+            $null = New-Item -ItemType Directory -Path $jobParent
+            $acl = Get-Acl -LiteralPath $jobParent
+            $acl.SetAccessRuleProtection($true, $false)
+            $admins = [Security.Principal.SecurityIdentifier]::new('S-1-5-32-544')
+            $system = [Security.Principal.SecurityIdentifier]::new('S-1-5-18')
+            foreach ($sid in $admins, $system, $account.SID) {
+              $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($sid, 'FullControl', 'ContainerInherit,ObjectInherit', 'None', 'Allow'))
+            }
+            $acl.SetOwner($admins)
+            Set-Acl -LiteralPath $jobParent -AclObject $acl
             $credential = [PSCredential]::new("$env:COMPUTERNAME\$name", $password)
             $node = (Get-Command node.exe).Source
             $script = Join-Path $env:GITHUB_WORKSPACE 'test\windows-smoke.ps1'
             $powershell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
             $log = Join-Path $env:RUNNER_TEMP 'copilot-runtime-smoke.log'
             $errors = Join-Path $env:RUNNER_TEMP 'copilot-runtime-smoke.err'
-            $process = Start-Process -FilePath $powershell -ArgumentList "-NoProfile -NonInteractive -File `"$script`" `"$node`"" -Credential $credential -LoadUserProfile -WorkingDirectory $env:GITHUB_WORKSPACE -Wait -PassThru -RedirectStandardOutput $log -RedirectStandardError $errors
+            $process = Start-Process -FilePath $powershell -ArgumentList "-NoProfile -NonInteractive -File `"$script`" `"$node`" `"$jobParent`"" -Credential $credential -WorkingDirectory $env:GITHUB_WORKSPACE -Wait -PassThru -RedirectStandardOutput $log -RedirectStandardError $errors
             if ($process.ExitCode) { Get-Content -LiteralPath $errors; exit $process.ExitCode }
           } finally {
+            if (Test-Path -LiteralPath $jobParent) { Remove-Item -LiteralPath $jobParent -Force }
             Remove-LocalUser -Name $name
           }
           $stock = Join-Path $env:RUNNER_TEMP 'stock-host'

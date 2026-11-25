@@ -1,9 +1,5 @@
-param([Parameter(Mandatory)][string]$Node)
+param([Parameter(Mandatory)][string]$Node,[Parameter(Mandatory)][string]$JobParent)
 $ErrorActionPreference = 'Stop'
-$env:LOCALAPPDATA = [Environment]::GetFolderPath(
-    [Environment+SpecialFolder]::LocalApplicationData,
-    [Environment+SpecialFolderOption]::Create
-)
-if (!$env:LOCALAPPDATA) { throw 'The non-elevated test user has no LocalAppData directory' }
+$env:LOCALAPPDATA = $JobParent
 & $Node (Join-Path $PSScriptRoot 'runtime-smoke.mjs')
 exit $LASTEXITCODE
