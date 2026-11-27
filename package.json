@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/domgordon-MSFT/openclaw-github-copilot-image.git"
+    "url": "git+https://github.com/domgord/openclaw-github-copilot-image.git"
   },
   "type": "module",
   "engines": { "node": ">=24.16.0 <25 || >=26.1.0" },
